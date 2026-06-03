@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-page-role="forum-admin">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Forum | ArchitectPro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="forum.css" />
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <video autoplay muted loop playsinline id="bg-video">
+    <source src="assets/BackgroundVideo.mp4" type="video/mp4" />
+  </video>
+
+  <div id="overlay"></div>
+
+  <header class="navbar">
+    <a href="#" class="logo">
+      <img src="assets/Logo.png" alt="ArchitectPro Logo" />
+      <span>ArchitectPro</span>
+    </a>
+
+    <div class="nav-right">
+      <div id="menuBtn" class="icon-btn"><i data-feather="menu"></i></div>
+      <div id="accountBtn" class="icon-btn"><i data-feather="user"></i></div>
+    </div>
+  </header>
+
+  <!-- Menu latéral -->
+  <div id="menuPanel" class="side-panel menu-panel">
+    <div class="panel-header">
+      <span>Menu</span>
+      <button class="close-btn" id="closeMenu"><i data-feather="x"></i></button>
+    </div>
+    <nav class="menu-links">
+      <a href="dashboard.html" class="menu-link"><i data-feather="home"></i> Home</a>
+      <a href="forum-admin.html" id="forumLink" class="menu-link active"><i data-feather="message-circle"></i> Forum</a>
+      <a href="project-admin.html" class="menu-link"><i data-feather="folder"></i> Projects</a>
+      
+    </nav>
+  </div>
+
+  <!-- Panneau compte -->
+  <div id="accountPanel" class="side-panel account-panel">
+    <div class="panel-header">
+      <span>Account</span>
+      <button class="close-btn" id="closePanel"><i data-feather="x"></i></button>
+    </div>
+
+    <div class="account-user">
+      <div class="account-avatar" id="accountAvatar"></div>
+      <div>
+        <h3 id="accountName">Loading...</h3>
+        <p id="accountEmail">Loading...</p>
+      </div>
+    </div>
+
+    <ul class="account-menu">
+      <li id="personalInfoBtn"><i data-feather="user"></i> Personal Info</li>
+      <li class="logout-item"><i data-feather="log-out"></i> Logout</li>
+    </ul>
+  </div>
+
+  <main class="main-content">
+    <section class="welcome-banner fade-in">
+      <div class="welcome-user">
+        <div class="welcome-avatar" id="welcomeAvatar"></div>
+        <h1 id="welcomeTitle">Admin Forum</h1>
+      </div>
+      <p>Admins can create topics and everyone can reply.</p>
+    </section>
+
+    <section class="forum-section fade-in delay-2">
+      <div class="forum-layout admin-layout">
+        <!-- Colonne gauche : topics + détail -->
+        <div class="forum-left">
+          <div class="forum-panel" id="topics-section">
+            <h2>Recent Topics</h2>
+            <div id="topics-list"></div>
+          </div>
+
+          <div class="forum-panel topic-detail-panel" id="topic-detail-panel" style="display: none;">
+            <button class="back-btn" id="back-to-topics">← Back to Topics</button>
+            <div id="topic-detail-content"></div>
+
+            <div class="reply-form">
+              <textarea id="reply-content" placeholder="Write a reply..." class="input-field"></textarea>
+              <button class="post-btn" id="post-reply-btn">Post Reply</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Panneau de création (admin seulement) -->
+        <div class="forum-panel" id="create-topic-panel">
+          <h2>Create Topic</h2>
+          <p class="admin-only-hint">Only admins can create new topics.</p>
+          <input type="text" id="title" placeholder="Topic title" class="input-field" />
+          <textarea id="content" placeholder="Write your message..." class="input-field"></textarea>
+          <button id="post-topic-btn" class="post-btn">Post Topic</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modale infos personnelles -->
+  <div id="personalModalOverlay" class="personal-modal-overlay">
+    <div id="personalModal" class="personal-modal">
+      <div class="personal-modal-header">
+        <h2>Personal Info</h2>
+        <button id="closePersonalModal" class="close-btn">×</button>
+      </div>
+
+      <label for="piAvatar">Profile photo</label>
+      <input type="file" id="piAvatar" accept="image/*" />
+
+      <label for="piName">Display name</label>
+      <input type="text" id="piName" placeholder="Your name" />
+
+      <label for="piEmail">Email</label>
+      <input type="email" id="piEmail" placeholder="Email" />
+
+      <label for="piPassword">New password</label>
+      <input type="password" id="piPassword" placeholder="Leave empty to keep current password" />
+
+      <div class="personal-actions">
+        <button class="btn btn-ghost" id="piLogout">Logout</button>
+        <button class="btn btn-primary" id="piSave">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="forum.js"></script>
+  <script>feather.replace();</script>
+</body>
+</html>

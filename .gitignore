@@ -1,0 +1,21 @@
+# Node / logs
+node_modules/
+npm-debug.log*
+
+# Supabase local files
+supabase/.env
+supabase/.temp
+supabase/.branches
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+
+# IDE files
+.vscode/
+
+# Composer dependencies
+vendor/

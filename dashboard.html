@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ArchitectPro – Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+
+<!-- VIDEO BACKGROUND -->
+<video autoplay muted loop playsinline id="bg-video">
+  <source src="assets/BackgroundVideo.mp4" type="video/mp4" />
+</video>
+
+<!-- NAVBAR -->
+<header class="navbar">
+  <a href="#" class="logo">
+    <img src="assets/Logo.png" alt="ArchitectPro Logo" />
+    <span>ArchitectPro</span>
+  </a>
+  <div class="nav-right">
+    <div id="menuBtn" class="icon-btn"><i data-feather="menu"></i></div>
+    <div id="accountBtn" class="icon-btn"><i data-feather="user"></i></div>
+  </div>
+</header>
+
+<!-- OVERLAY -->
+<div id="overlay"></div>
+
+<!-- MENU PANEL -->
+<div id="menuPanel" class="side-panel menu-panel">
+  <div class="panel-header">
+    <span>Menu</span>
+    <button class="close-btn" id="closeMenu"><i data-feather="x"></i></button>
+  </div>
+  <nav class="menu-links">
+    <a href="dashboard.html" class="menu-link active"><i data-feather="home"></i> Home</a>
+    <a href="forum-admin.html" class="menu-link"><i data-feather="message-circle"></i> Forum</a>
+    <a href="project-admin.html" class="menu-link"><i data-feather="folder"></i> Projects</a>
+  </nav>
+</div>
+
+<!-- ACCOUNT PANEL -->
+<div id="accountPanel" class="side-panel account-panel">
+  <div class="panel-header">
+    <span>Account</span>
+    <button class="close-btn" id="closePanel"><i data-feather="x"></i></button>
+  </div>
+  <div class="account-user">
+    <div class="account-avatar" id="accountAvatar"></div>
+    <div>
+      <h3 id="accountName">Admin</h3>
+      <p id="accountEmail">admin@example.com</p>
+    </div>
+  </div>
+  <ul class="account-menu">
+    <li id="personalInfoBtn"><i data-feather="user"></i> Personal Info</li>
+    <li class="logout-item"><i data-feather="log-out"></i> Logout</li>
+  </ul>
+</div>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- WELCOME BANNER -->
+  <section class="welcome-banner fade-in">
+    <div class="welcome-user">
+      <div class="welcome-avatar" id="welcomeAvatar"></div>
+      <h1 id="welcomeTitle">Admin Dashboard</h1>
+    </div>
+    <p>Manage users, view projects, and monitor system activity.</p>
+  </section>
+
+  <!-- USER MANAGEMENT SECTION -->
+  <section class="users-section fade-in delay-2">
+    <div class="section-header">
+      <h2 class="section-title">Registered Users</h2>
+      <button class="btn btn-ghost" id="refreshUsersBtn">
+        <i data-feather="refresh-cw"></i> Refresh
+      </button>
+    </div>
+    <div class="users-table-wrapper glass-card">
+      <table class="users-table" id="usersTable">
+        <thead>
+          <tr>
+            <th>Avatar</th>
+            <th>Display Name</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody">
+          <!-- Rempli dynamiquement -->
+        </tbody>
+      </table>
+      <div id="noUsersMsg" class="no-users-msg" style="display: none;">
+        No users found.
+      </div>
+      <div id="loadingUsers" class="loading-spinner">Loading users...</div>
+    </div>
+  </section>
+
+  <section class="tasks-section fade-in delay-3">
+  <div class="section-header">
+    <h2 class="section-title">Tasks</h2>
+  </div>
+
+  <div class="task-create glass-card">
+    <input type="text" id="taskTitle" placeholder="Task title" />
+    <input type="date" id="taskDueDate" />
+    <button class="btn btn-primary" id="createTaskBtn">Create task</button>
+  </div>
+
+  <div class="tasks-list glass-card">
+    <div id="tasksEmptyMsg" class="no-users-msg" style="display:none;">No tasks yet.</div>
+    <div id="tasksList"></div>
+  </div>
+</section>
+
+</main>
+
+<!-- PERSONAL INFO MODAL (identique à home) -->
+<div id="personalModalOverlay" class="personal-modal-overlay">
+  <div id="personalModal" class="personal-modal">
+    <div class="personal-modal-header">
+      <h2>Personal Info</h2>
+      <button id="closePersonalModal" class="close-btn">×</button>
+    </div>
+    <label for="piAvatar">Profile photo</label>
+    <input type="file" id="piAvatar" accept="image/*" />
+    <label for="piName">Display name</label>
+    <input type="text" id="piName" placeholder="Your name" />
+    <label for="piEmail">Email</label>
+    <input type="email" id="piEmail" placeholder="Email" />
+    <label for="piPassword">New password</label>
+    <input type="password" id="piPassword" placeholder="Leave empty to keep current password" />
+    <div class="personal-actions">
+      <button class="btn btn-ghost" id="piLogout">Logout</button>
+      <button class="btn btn-primary" id="piSave">Save changes</button>
+    </div>
+    <button class="delete-account" id="piDelete">Delete account</button>
+  </div>
+</div>
+<!-- AI CHAT WINDOW -->
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar-icon">
+        <i data-feather="cpu"></i>
+      </div>
+      <div>
+        <div class="chat-title">AI Assistant</div>
+        <div class="chat-status"><span class="status-dot"></span> Online</div>
+      </div>
+    </div>
+    <button class="chat-close-btn" id="chatClose"><i data-feather="x"></i></button>
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg bot">
+      <div class="msg-bubble">👋 Hi! I'm your AI Assistant. How can I help you today?</div>
+    </div>
+  </div>
+
+  <div class="chat-input-area">
+    <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" />
+    <button class="chat-send-btn" id="chatSend">
+      <i data-feather="send"></i>
+    </button>
+  </div>
+</div>
+
+<!-- AI CHATBOT FAB -->
+<div class="ai-fab" id="aiFab">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="1.8"
+       stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="6" width="18" height="13" rx="3" ry="3"/>
+    <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+    <circle cx="8.5" cy="12.5" r="1" fill="currentColor" stroke="none"/>
+    <circle cx="15.5" cy="12.5" r="1" fill="currentColor" stroke="none"/>
+    <path d="M9 16s1 1 3 1 3-1 3-1"/>
+    <line x1="12" y1="3" x2="12" y2="1"/>
+  </svg>
+  <span class="ai-fab-tooltip">AI Assistant</span>
+</div>
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="dashboard.js"></script>
+<script>feather.replace();</script>
+</body>
+</html>

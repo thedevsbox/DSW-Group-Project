@@ -1,0 +1,29 @@
+# render.yaml — Render deployment config
+# Place this in the ROOT of your repository
+
+services:
+  - type: web
+    name: architectpro
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+
+    # Render will assign a port automatically via $PORT
+    # Apache listens on 80 by default which Render maps correctly
+
+    envVars:
+      # ── Mail (PHPMailer) ──────────────────────────────────
+      - key: MAIL_USERNAME
+        sync: false        # Set manually in Render dashboard
+
+      - key: MAIL_PASSWORD
+        sync: false        # Set manually in Render dashboard
+
+      - key: MAIL_FROM_NAME
+        value: ArchitectPro
+
+      # ── Supabase (if you ever need server-side access) ────
+      - key: SUPABASE_URL
+        sync: false
+
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false        # Only if used server-side — never expose in JS

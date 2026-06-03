@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Unity Web Player | AP</title>
+  <link rel="shortcut icon" href="TemplateData/favicon.ico">
+  <link rel="stylesheet" href="TemplateData/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #0a0f1e;
+      overflow: hidden;
+      height: 100vh;
+    }
+    #unity-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .ui-overlay {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 2;
+      display: flex;
+      gap: 12px;
+    }
+    .icon-btn {
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(8px);
+      border: none;
+      color: white;
+      width: 48px;
+      height: 48px;
+      border-radius: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      transition: 0.2s;
+    }
+    .icon-btn:hover {
+      background: #2c3e66;
+      transform: scale(1.05);
+    }
+    .panel {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 380px;
+      height: 100%;
+      background: #111827e6;
+      backdrop-filter: blur(16px);
+      color: white;
+      transition: 0.3s ease;
+      z-index: 10;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      border-left: 1px solid #2d3748;
+    }
+    .panel.active {
+      right: 0;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #2d3748;
+      padding-bottom: 12px;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 28px;
+      cursor: pointer;
+    }
+    .projects-grid {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .project-card {
+      background: #1f2937;
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .project-card:hover {
+      background: #374151;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 5;
+      display: none;
+    }
+    .overlay.active {
+      display: block;
+    }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: 0.2s;
+    }
+    .modal-overlay.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    .modal {
+      background: #1e293b;
+      width: 400px;
+      border-radius: 24px;
+      padding: 24px;
+      color: white;
+    }
+    .modal input, .modal textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 16px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: white;
+      border-radius: 8px;
+    }
+    button {
+      background: #3b82f6;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+    .avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #4f46e5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      overflow: hidden;
+    }
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <!-- Conteneur Unity -->
+  <div id="unity-container" class="unity-desktop">
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="unity-loading-bar">
+      <div id="unity-logo"></div>
+      <div id="unity-progress-bar-empty">
+        <div id="unity-progress-bar-full"></div>
+      </div>
+    </div>
+    <div id="unity-warning"></div>
+    <div id="unity-footer">
+      <div id="unity-logo-title-footer"></div>
+      <div id="unity-fullscreen-button"></div>
+      <div id="unity-build-title">AP</div>
+    </div>
+  </div>
+
+  <!-- UI overlay buttons referenced by JS -->
+  <div class="ui-overlay">
+    <button id="menuBtn" class="icon-btn" title="Projets">
+      <i data-feather="folder"></i>
+    </button>
+    <button id="accountBtn" class="icon-btn" title="Compte">
+      <i data-feather="user"></i>
+    </button>
+    <button id="fullscreenBtn" class="icon-btn" title="Plein écran">
+      <i data-feather="maximize"></i>
+    </button>
+  </div>
+
+  <div id="overlay" class="overlay"></div>
+
+  <!-- Panneau Menu (Projets) -->
+  <div id="menuPanel" class="panel">
+    <div class="panel-header">
+      <h3>Menu</h3>
+      <button id="closeMenu" class="close-btn">&times;</button>
+    </div>
+    <div class="projects-grid">
+      <div id="loadingProjects">Chargement des projets...</div>
+      <div id="noProjectsMsg" style="display:none;">Aucun projet trouvé.</div>
+      <div id="projectsList"></div>
+      <button id="refreshProjectsBtn" style="margin-top: 16px;">Actualiser</button>
+    </div>
+  </div>
+
+  <!-- Panneau Compte -->
+  <div id="accountPanel" class="panel">
+    <div class="panel-header">
+      <h3>Mon Compte</h3>
+      <button id="closePanel" class="close-btn">&times;</button>
+    </div>
+    <div style="display: flex; gap: 16px; align-items: center;">
+      <div id="accountAvatar" class="avatar">U</div>
+      <div>
+        <div id="accountName">Utilisateur</div>
+        <div id="accountEmail" style="font-size: 12px; color: #9ca3af;">email@exemple.com</div>
+      </div>
+    </div>
+    <button id="personalInfoBtn">Informations personnelles</button>
+    <button class="logout-item" style="background:#dc2626;">Déconnexion</button>
+  </div>
+
+  <!-- Modal Informations personnelles -->
+  <div id="personalModalOverlay" class="modal-overlay">
+    <div class="modal">
+      <h3>Modifier mes infos</h3>
+      <label>Nom</label>
+      <input type="text" id="piName" placeholder="Nom">
+      <label>Email</label>
+      <input type="email" id="piEmail" placeholder="Email">
+      <label>Mot de passe (laisser vide si inchangé)</label>
+      <input type="password" id="piPassword" placeholder="Nouveau mot de passe">
+      <label>Avatar</label>
+      <input type="file" id="piAvatar" accept="image/*">
+      <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+        <button id="piSave">Enregistrer</button>
+        <button id="piLogout" style="background:#dc2626;">Déconnexion</button>
+        <button id="closePersonalModal">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+
+  <script>
+  let unityInstance = null;
+  let pendingSessionPayload = null;
+  let sessionRetryTimer = null;
+  let sessionAlreadySent = false;
+
+  const SUPABASE_URL = "https://klxtstltmqwsaqccekfm.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_9RkYRGEhC9VyU2AuF8Z-NQ_C529J20s";
+  const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function getStoredSessionPayload() {
+    const userId = localStorage.getItem("supabase_user_id");
+    const accessToken = localStorage.getItem("supabase_access_token");
+
+    if (!userId || !accessToken) return null;
+
+    return JSON.stringify({
+      userId,
+      accessToken
+    });
+  }
+
+  function pushSessionToUnity() {
+    if (!unityInstance || sessionAlreadySent) return false;
+
+    const payload = pendingSessionPayload || getStoredSessionPayload();
+    if (!payload) return false;
+
+    try {
+      unityInstance.SendMessage("WebSessionBridge", "SetSession", payload);
+      pendingSessionPayload = null;
+      sessionAlreadySent = true;
+      console.log("[UnityPage] Session envoyée à Unity:", payload);
+      return true;
+    } catch (err) {
+      console.error("[UnityPage] Erreur SendMessage vers Unity:", err);
+      return false;
+    }
+  }
+
+  function startSessionRetry() {
+    if (sessionRetryTimer) return;
+
+    sessionRetryTimer = setInterval(() => {
+      const sent = pushSessionToUnity();
+      if (sent) {
+        clearInterval(sessionRetryTimer);
+        sessionRetryTimer = null;
+      }
+    }, 300);
+  }
+
+  window.addEventListener("message", (event) => {
+    const data = event.data || {};
+
+    if (data.type === "set-session") {
+      pendingSessionPayload = data.payload;
+      sessionAlreadySent = false;
+      console.log("[UnityPage] Session reçue depuis le parent.");
+      startSessionRetry();
+      pushSessionToUnity();
+    }
+
+    if (data.type === "clear-session") {
+      pendingSessionPayload = null;
+      sessionAlreadySent = false;
+
+      if (unityInstance) {
+        unityInstance.SendMessage("WebSessionBridge", "ClearSession", "");
+      }
+
+      console.log("[UnityPage] Session effacée.");
+    }
+
+    if (data.type === "request-fullscreen") {
+      if (unityInstance) {
+        unityInstance.SetFullscreen(1);
+      }
+    }
+  });
+
+  const menuBtn = document.getElementById("menuBtn");
+  const menuPanel = document.getElementById("menuPanel");
+  const closeMenu = document.getElementById("closeMenu");
+  const accountBtn = document.getElementById("accountBtn");
+  const accountPanel = document.getElementById("accountPanel");
+  const closePanel = document.getElementById("closePanel");
+  const logoutItem = document.querySelector(".logout-item");
+  const personalInfoBtn = document.getElementById("personalInfoBtn");
+  const personalModalOverlay = document.getElementById("personalModalOverlay");
+  const closePersonalModal = document.getElementById("closePersonalModal");
+  const piName = document.getElementById("piName");
+  const piEmail = document.getElementById("piEmail");
+  const piPassword = document.getElementById("piPassword");
+  const piAvatar = document.getElementById("piAvatar");
+  const piSave = document.getElementById("piSave");
+  const piLogout = document.getElementById("piLogout");
+  const accountAvatar = document.getElementById("accountAvatar");
+  const accountName = document.getElementById("accountName");
+  const accountEmail = document.getElementById("accountEmail");
+  const projectsList = document.getElementById("projectsList");
+  const loadingProjects = document.getElementById("loadingProjects");
+  const noProjectsMsg = document.getElementById("noProjectsMsg");
+  const refreshProjectsBtn = document.getElementById("refreshProjectsBtn");
+  const fullscreenBtn = document.getElementById("fullscreenBtn");
+  const overlay = document.getElementById("overlay");
+
+  let currentUser = null;
+  let currentProfile = null;
+  let currentSession = null;
+  let isAdmin = false;
+
+  function getInitials(name = "") {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "U";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  function getFallbackName(email = "") {
+    return email ? email.split("@")[0] : "User";
+  }
+
+  function escapeHtml(text = "") {
+    const div = document.createElement("div");
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function setAvatar(el, name, avatarUrl) {
+    if (!el) return;
+    if (avatarUrl) {
+      el.innerHTML = `<img src="${avatarUrl}" alt="${escapeHtml(name)}">`;
+    } else {
+      el.textContent = getInitials(name);
+    }
+  }
+
+  function closeAllPanels() {
+    menuPanel?.classList.remove("active");
+    accountPanel?.classList.remove("active");
+    overlay?.classList.remove("active");
+  }
+
+  function buildSessionPayload() {
+    if (!currentUser || !currentSession?.access_token) return null;
+    return JSON.stringify({
+      userId: currentUser.id,
+      accessToken: currentSession.access_token
+    });
+  }
+
+  function storeSessionForUnity() {
+    if (!currentUser) return;
+
+    if (currentSession?.access_token) {
+      localStorage.setItem("supabase_user_id", currentUser.id);
+      localStorage.setItem("supabase_access_token", currentSession.access_token);
+      console.log("[UnityPage] Session stockée dans localStorage");
+    }
+  }
+
+  function sendSessionToUnity() {
+    const payload = buildSessionPayload();
+    if (!payload) return;
+
+    pendingSessionPayload = payload;
+    sessionAlreadySent = false;
+    startSessionRetry();
+    pushSessionToUnity();
+  }
+
+  async function loadCurrentUserInfo() {
+    const { data: userData, error: userError } = await supabaseClient.auth.getUser();
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+
+    if (userError || !userData?.user) {
+      window.location.href = "Sign.html";
+      return false;
+    }
+
+    currentUser = userData.user;
+    currentSession = sessionData?.session ?? null;
+
+    const { data: profile, error: profileError } = await supabaseClient
+      .from("profiles")
+      .select("display_name, email, role, avatar_url")
+      .eq("id", currentUser.id)
+      .single();
+
+    if (profileError || !profile) {
+      alert("Unable to verify your profile.");
+      window.location.href = "home.html";
+      return false;
+    }
+
+    currentProfile = profile;
+    isAdmin = profile.role === "admin";
+
+    const displayName = profile.display_name || getFallbackName(currentUser.email);
+    const email = profile.email || currentUser.email;
+    const avatarUrl = profile.avatar_url || currentUser.user_metadata?.avatar_url || "";
+
+    if (accountName) accountName.textContent = displayName;
+    if (accountEmail) accountEmail.textContent = email;
+    setAvatar(accountAvatar, displayName, avatarUrl);
+
+    if (piName) piName.value = displayName;
+    if (piEmail) piEmail.value = email;
+    if (piPassword) piPassword.value = "";
+
+    storeSessionForUnity();
+    sendSessionToUnity();
+
+    return true;
+  }
+
+  async function loadProjects() {
+    if (!projectsList) return;
+
+    loadingProjects.style.display = "block";
+    noProjectsMsg.style.display = "none";
+    projectsList.innerHTML = "";
+
+    const { data, error } = await supabaseClient
+      .from("projects")
+      .select("*");
+
+    loadingProjects.style.display = "none";
+
+    if (error) {
+      console.error("Error loading projects:", error);
+      noProjectsMsg.textContent = "Failed to load projects.";
+      noProjectsMsg.style.display = "block";
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      noProjectsMsg.textContent = "Aucun projet trouvé.";
+      noProjectsMsg.style.display = "block";
+      return;
+    }
+
+    data.forEach((project) => {
+      const title = project.project_name || project.name || project.title || "Untitled Project";
+      const description = project.description || project.details || "No description provided.";
+      const status = project.status || "In Progress";
+      const createdAt = project.created_at ? new Date(project.created_at).toLocaleDateString() : "";
+      const ownerName = project.owner_name || currentProfile?.display_name || getFallbackName(currentUser?.email);
+      const avatarUrl = project.owner_avatar_url || currentProfile?.avatar_url || "";
+
+      const card = document.createElement("article");
+      card.className = "project-card";
+      card.innerHTML = `
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="avatar" style="width:40px;height:40px;">
+            ${avatarUrl ? `<img src="${avatarUrl}">` : getInitials(ownerName)}
+          </div>
+          <div><strong>${escapeHtml(title)}</strong><br><small>${escapeHtml(ownerName)}</small></div>
+        </div>
+        <p style="margin-top:8px; font-size:14px;">${escapeHtml(description)}</p>
+        <div style="display:flex; justify-content:space-between; margin-top:12px;">
+          <span class="status">${escapeHtml(status)}</span>
+          <small>${createdAt}</small>
+        </div>
+      `;
+      projectsList.appendChild(card);
+    });
+  }
+
+  function openPersonalModal() {
+    personalModalOverlay?.classList.add("show");
+    closeAllPanels();
+  }
+
+  function closePersonalInfoModal() {
+    personalModalOverlay?.classList.remove("show");
+  }
+
+  async function savePersonalInfo() {
+    const newName = piName?.value.trim();
+    const newEmail = piEmail?.value.trim();
+    const newPassword = piPassword?.value.trim();
+    const file = piAvatar?.files?.[0];
+
+    if (!newName || !newEmail) {
+      alert("Veuillez remplir le nom et l'email.");
+      return;
+    }
+
+    try {
+      let avatarUrl = currentProfile?.avatar_url || currentUser.user_metadata?.avatar_url || "";
+
+      if (file) {
+        const fileExt = file.name.split(".").pop();
+        const filePath = `${currentUser.id}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabaseClient.storage
+          .from("avatars")
+          .upload(filePath, file, { upsert: true, contentType: file.type });
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabaseClient.storage
+          .from("avatars")
+          .getPublicUrl(filePath);
+
+        avatarUrl = publicUrlData.publicUrl;
+      }
+
+      const updatePayload = {
+        email: newEmail,
+        data: { display_name: newName, avatar_url: avatarUrl }
+      };
+
+      if (newPassword) updatePayload.password = newPassword;
+
+      const { error: authUpdateError } = await supabaseClient.auth.updateUser(updatePayload);
+      if (authUpdateError) throw authUpdateError;
+
+      const { error: profileUpdateError } = await supabaseClient
+        .from("profiles")
+        .update({
+          display_name: newName,
+          email: newEmail,
+          avatar_url: avatarUrl
+        })
+        .eq("id", currentUser.id);
+
+      if (profileUpdateError) throw profileUpdateError;
+
+      await loadCurrentUserInfo();
+      closePersonalInfoModal();
+      alert("Informations mises à jour.");
+    } catch (err) {
+      console.error(err);
+      alert("Erreur lors de la mise à jour.");
+    }
+  }
+
+  async function logout() {
+    await supabaseClient.auth.signOut();
+    localStorage.removeItem("supabase_user_id");
+    localStorage.removeItem("supabase_access_token");
+    sessionAlreadySent = false;
+    pendingSessionPayload = null;
+
+    if (unityInstance) {
+      unityInstance.SendMessage("WebSessionBridge", "ClearSession", "");
+    }
+
+    window.location.href = "Sign.html";
+  }
+
+  function setupFullscreenButton() {
+    if (!fullscreenBtn) return;
+    fullscreenBtn.addEventListener("click", () => {
+      if (unityInstance) {
+        unityInstance.SetFullscreen(1);
+      } else {
+        console.warn("Unity instance not ready for fullscreen");
+      }
+    });
+  }
+
+  (async function initUI() {
+    const userOk = await loadCurrentUserInfo();
+    if (!userOk) return;
+
+    await loadProjects();
+    feather.replace();
+
+    setInterval(() => {
+      storeSessionForUnity();
+      sendSessionToUnity();
+    }, 30000);
+
+    if (menuBtn) menuBtn.addEventListener("click", () => {
+      closeAllPanels();
+      menuPanel.classList.add("active");
+      overlay.classList.add("active");
+    });
+
+    if (accountBtn) accountBtn.addEventListener("click", () => {
+      closeAllPanels();
+      accountPanel.classList.add("active");
+      overlay.classList.add("active");
+    });
+
+    if (closeMenu) closeMenu.addEventListener("click", closeAllPanels);
+    if (closePanel) closePanel.addEventListener("click", closeAllPanels);
+    if (overlay) overlay.addEventListener("click", closeAllPanels);
+    if (personalInfoBtn) personalInfoBtn.addEventListener("click", openPersonalModal);
+    if (closePersonalModal) closePersonalModal.addEventListener("click", closePersonalInfoModal);
+
+    if (personalModalOverlay) {
+      personalModalOverlay.addEventListener("click", (e) => {
+        if (e.target === personalModalOverlay) closePersonalInfoModal();
+      });
+    }
+
+    if (piSave) piSave.addEventListener("click", savePersonalInfo);
+    if (piLogout) piLogout.addEventListener("click", logout);
+    if (logoutItem) logoutItem.addEventListener("click", logout);
+    if (refreshProjectsBtn) refreshProjectsBtn.addEventListener("click", loadProjects);
+  })();
+
+  (function initUnity() {
+    const canvas = document.querySelector("#unity-canvas");
+
+    function unityShowBanner(msg, type) {
+      const warningBanner = document.querySelector("#unity-warning");
+      function updateBannerVisibility() {
+        warningBanner.style.display = warningBanner.children.length ? "block" : "none";
+      }
+      const div = document.createElement("div");
+      div.innerHTML = msg;
+      warningBanner.appendChild(div);
+      if (type === "error") div.style = "background: red; padding: 10px;";
+      else {
+        if (type === "warning") div.style = "background: yellow; padding: 10px;";
+        setTimeout(() => {
+          warningBanner.removeChild(div);
+          updateBannerVisibility();
+        }, 5000);
+      }
+      updateBannerVisibility();
+    }
+
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/Web_App.loader.js";
+    const config = {
+      arguments: [],
+      dataUrl: buildUrl + "/Web_App.data.unityweb",
+      frameworkUrl: buildUrl + "/Web_App.framework.js.unityweb",
+      codeUrl: buildUrl + "/Web_App.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "ArchitectPro",
+      productName: "AP",
+      productVersion: "0.1.0",
+      showBanner: unityShowBanner,
+    };
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      const meta = document.createElement("meta");
+      meta.name = "viewport";
+      meta.content = "width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes";
+      document.getElementsByTagName("head")[0].appendChild(meta);
+      document.querySelector("#unity-container").className = "unity-mobile";
+      canvas.className = "unity-mobile";
+    } else {
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      canvas.style.display = "block";
+    }
+
+    document.querySelector("#unity-loading-bar").style.display = "block";
+
+    const script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
+      }).then((instance) => {
+        unityInstance = instance;
+        document.querySelector("#unity-loading-bar").style.display = "none";
+
+        document.querySelector("#unity-fullscreen-button").onclick = () => {
+          unityInstance.SetFullscreen(1);
+        };
+
+        setupFullscreenButton();
+
+        console.log("[UnityPage] Unity ready.");
+        startSessionRetry();
+        pushSessionToUnity();
+      }).catch((message) => {
+        alert(message);
+      });
+    };
+
+    document.body.appendChild(script);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ArchitectPro - Sign In</title>
+  <link rel="stylesheet" href="Sign.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .pending-notice {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2000;
+      background: #1a1a1a;
+      border: 1px solid rgba(255, 200, 100, 0.3);
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      max-width: 420px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);
+      animation: fadeInPage 0.4s ease;
+    }
+    .pending-notice.show { display: block; }
+    .pending-notice .pending-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    .pending-notice h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.75rem;
+    }
+    .pending-notice p {
+      font-size: 0.95rem;
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    .pending-notice button {
+      padding: 0.75rem 2rem;
+      background: linear-gradient(145deg, #2d2d2d, #1f1f1f);
+      border: 1px solid #3d3d3d;
+      border-radius: 40px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      color: #ffffff;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .pending-notice button:hover {
+      background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
+      border-color: #5a5a5a;
+    }
+    .pending-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 1999;
+    }
+    .pending-backdrop.show { display: block; }
+    @keyframes fadeInPage {
+      from { opacity: 0; transform: translate(-50%, -48%); }
+      to   { opacity: 1; transform: translate(-50%, -50%); }
+    }
+  </style>
+</head>
+<body>
+  <video autoplay muted playsinline loop preload="auto" id="bg-video">
+    <source src="assets/BackgroundVideo.mp4" type="video/mp4" />
+  </video>
+  <div class="video-overlay"></div>
+
+  <!-- Pending Admin Notice -->
+  <div class="pending-backdrop" id="pendingBackdrop"></div>
+  <div class="pending-notice" id="pendingNotice">
+    <div class="pending-icon">⏳</div>
+    <h3>Account Pending Approval</h3>
+    <p>Your administrator account request has been received. Please wait for an existing administrator to approve your access before signing in.</p>
+    <button id="pendingOkBtn">Got it</button>
+  </div>
+
+  <main class="container">
+    <div class="logo-title">
+      <img src="assets/Logo.png" alt="ArchitectPro Logo" class="logo" />
+      <h1 class="title">ArchitectPro</h1>
+    </div>
+    <p class="subtitle">Choose an account or add a new user</p>
+    <section class="profiles" id="profiles" aria-label="Saved profiles"></section>
+  </main>
+
+  <!-- Modal -->
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <h2 id="modal-title">Sign In</h2>
+        <button class="close-btn" id="closeModal" aria-label="Close modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="authForm" novalidate>
+
+          <!-- ===== LOGIN FIELDS ===== -->
+          <div id="loginFields">
+            <div class="input-group">
+              <label for="login-role">Account Type</label>
+              <div class="select-wrapper">
+                <select id="login-role">
+                  <option value="user">Regular User</option>
+                  <option value="admin">Administrator</option>
+                </select>
+                <i class="fas fa-chevron-down select-arrow"></i>
+              </div>
+            </div>
+            <div class="input-group">
+              <label for="login-username">Email</label>
+              <input type="email" id="login-username" placeholder="Enter your email" autocomplete="email" />
+            </div>
+            <div class="input-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password" />
+            </div>
+            <div class="forgot-password-row">
+              <a href="#" id="forgotPasswordLink">Forgot password</a>
+            </div>
+          </div>
+
+          <!-- ===== REGISTER FIELDS ===== -->
+          <div id="registerFields" style="display: none;">
+            <div class="input-group">
+              <label for="reg-role">Account Type</label>
+              <div class="select-wrapper">
+                <select id="reg-role">
+                  <option value="user">Regular User</option>
+                  <option value="admin">Administrator (requires approval)</option>
+                </select>
+                <i class="fas fa-chevron-down select-arrow"></i>
+              </div>
+              <p class="role-hint" id="roleHint" style="display:none;">
+                <i class="fas fa-info-circle"></i>
+                Admin accounts require approval before you can sign in.
+              </p>
+            </div>
+            <div class="input-group">
+              <label for="reg-email">Email</label>
+              <input type="email" id="reg-email" placeholder="example@email.com" autocomplete="email" />
+            </div>
+            <div class="input-group">
+              <label for="reg-username">Username</label>
+              <input type="text" id="reg-username" placeholder="Choose a username" autocomplete="username" />
+            </div>
+            <div class="input-group">
+              <label for="reg-password">Password</label>
+              <input type="password" id="reg-password" placeholder="Minimum 6 characters" autocomplete="new-password" />
+            </div>
+            <div class="input-group">
+              <label for="reg-confirm">Confirm Password</label>
+              <input type="password" id="reg-confirm" placeholder="Re-enter your password" autocomplete="new-password" />
+            </div>
+          </div>
+
+          <button type="submit" id="submitBtn">Sign In</button>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <p id="toggleMode">
+          Don't have an account yet? <a href="#" id="switchToRegister">Create an account</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forgot Password Modal -->
+  <div id="forgotModal" class="modal" style="display:none;" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2>Forgot Password</h2>
+        <button class="close-btn" id="closeForgotModal" aria-label="Close">&times;</button>
+      </div>
+      <p style="color:#aaa; font-size:0.95rem; margin-bottom:1.5rem;">
+        Enter your account email to receive a reset link.
+      </p>
+      <div class="input-group">
+        <label for="forgot-email">Email Address</label>
+        <input type="email" id="forgot-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
+      <div id="forgotMsg" class="reset-message" style="display:none;"></div>
+      <button type="button" id="forgotSubmitBtn">Send Reset Link</button>
+    </div>
+  </div>
+
+  <script src="Sign.js"></script>
+  <script>
+    // Show pending notice if redirected from home.js
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('pending') === '1') {
+      document.getElementById('pendingNotice').classList.add('show');
+      document.getElementById('pendingBackdrop').classList.add('show');
+    }
+
+    document.getElementById('pendingOkBtn').addEventListener('click', () => {
+      document.getElementById('pendingNotice').classList.remove('show');
+      document.getElementById('pendingBackdrop').classList.remove('show');
+      // Clean URL
+      history.replaceState(null, '', window.location.pathname);
+    });
+
+
+    if (params.get('verified') === '1') {
+    // optionally show a success toast — or just let them log in normally
+    }
+  </script>
+</body>
+</html>

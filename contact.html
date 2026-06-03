@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>ArchitectPro - Contact</title>
+  <link rel="stylesheet" href="contact.css">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+  <!-- Background video -->
+  <video autoplay muted playsinline loop preload="auto" id="bg-video">
+    <source src="assets/BackgroundVideo.mp4" type="video/mp4">
+  </video>
+  <div class="video-overlay"></div>
+
+  <!-- Dark overlay -->
+  <div class="overlay-dark"></div>
+
+  <!-- Main container -->
+  <div class="page">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="logo-area">
+        <img src="assets/Logo.png" alt="ArchitectPro Logo" class="logo">
+        <h2 class="brand">ArchitectPro</h2>
+      </div>
+      <nav class="main-nav">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="contact.html" class="active">Contact</a>
+      </nav>
+    </header>
+
+    <!-- Contact content -->
+    <section class="contact-hero">
+      <i data-lucide="message-square" class="hero-icon"></i>
+      <h1>Get in Touch</h1>
+      <p>Have questions? We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+    </section>
+
+    <!-- Info Cards -->
+    <div class="cards-grid">
+    <!-- Email Card -->
+        <a class="info-card" href="mailto:christenvienlolo3@gmail.com">
+          <div class="icon-box"><i data-lucide="mail"></i></div>
+          <h3>Email</h3>
+          <p>christenvienlolo3@gmail.com</p>
+          <small>We'll respond within 24 hours</small>
+        </a>
+
+      <!-- Phone Card -->
+          <a class="info-card" href="tel:+270678504055">
+            <div class="icon-box"><i data-lucide="phone"></i></div>
+            <h3>Phone</h3>
+            <p>0678504055</p>
+            <small>Mon-Fri, 9AM-6PM SAST</small>
+          </a>
+      
+
+      <!-- Address Card -->
+          <a class="info-card" href="https://maps.google.com/?q=87+Rissik+Street+Johannesburg+CBD+2000+South+Africa" target="_blank" rel="noopener">
+            <div class="icon-box"><i data-lucide="map-pin"></i></div>
+            <h3>Office</h3>
+            <p>87 Rissik Street, Johannesburg CBD, 2000</p>
+            <small>South Africa</small>
+          </a>
+
+      <div class="info-card clickable-card" id="support-btn">
+        <div class="icon-box"><i data-lucide="clock"></i></div>
+        <h3>Support Hours <i data-lucide="activity" class="pulse-icon"></i></h3>
+        <p>24/7 Technical Support</p>
+        <small>Always here to help</small>
+        <div class="status-text">CLICK TO VERIFY STATUS</div>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <section class="form-section">
+      <div class="form-container">
+        <h2>Send Us a Message</h2>
+        <form id="contact-form" action="send-email.php" method="POST">
+          <div class="form-row">
+            <div class="input-group">
+              <label>Full Name *</label>
+              <input type="text" name="name" required placeholder="John Doe">
+            </div>
+            <div class="input-group">
+              <label>Email Address *</label>
+              <input type="email" name="email" required placeholder="JP@company.com">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Message *</label>
+            <textarea name="message" required rows="6" placeholder="Tell us more about your project..."></textarea>
+          </div>
+          <button type="submit" class="submit-btn">Send Message <i data-lucide="send"></i></button>
+        </form>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>What are your pricing plans?</h3>
+          <p>ArchitectPro is completely free to use. We offer our core 3D visualization platform at no cost to help architects bring their designs to life.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Is there a free trial available?</h3>
+          <p>Since our service is entirely free, you get full access to all features immediately upon signing up. No credit card required.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How long does it take to render a 3D plan?</h3>
+          <p>Depending on the complexity of your construction plan, our cloud servers typically process and generate the interactive Unity environment within a few hours.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Do I need a high-end computer to view the 3D models?</h3>
+          <p>Not at all. Our cloud-based simulation farm handles the heavy lifting, allowing you to seamlessly view complex 3D projects directly in your browser on most standard devices.</p>
+        </div>
+        <div class="faq-item">
+          <h3>Do you offer training and support?</h3>
+          <p>Yes! We provide comprehensive onboarding, training materials, and 24/7 technical support.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Support Modal -->
+    <div class="modal-overlay" id="support-modal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <span>SYS_SUPPORT // GLOBAL_STATUS</span>
+          <button id="close-modal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+          <div class="time-row">
+            <span>CURRENT_TIME</span>
+            <span id="live-time">00:00:00 UTC</span>
+          </div>
+          <div class="server-grid">
+            <div class="server-item">
+              <span>AFRICA (JHB)</span>
+              <span class="online">ONLINE <small>8ms</small></span>
+            </div>
+            <div class="server-item">
+              <span>EUROPE (LDN)</span>
+              <span class="online">ONLINE <small>145ms</small></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="footer">
+    <p>© 2026 ArchitectPro. All rights reserved.</p>
+  </footer>
+
+  <script src="contact.js"></script>
+</body>
+</html>
